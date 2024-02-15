@@ -1,5 +1,5 @@
 from copy import copy, deepcopy
-from utils import fill_matrix, get_sorted_matrix
+from utils import get_filled_matrix, get_sorted_matrix
 
 
 if __name__ == "__main__":
@@ -12,7 +12,7 @@ if __name__ == "__main__":
         tasks_matrix = [[*map(int, inpfile.readline().split())] for _ in range(rows)]
     print("Исходная матрица")
     print(*tasks_matrix, sep="\n")
-    fill_matrix(matr := deepcopy(tasks_matrix))
+    matr = get_filled_matrix(tasks_matrix)
     print("Исходный результат", matr[-1][-1])
 
     head_sums = [(idx, sum(row[:-1])) for idx, row in enumerate(tasks_matrix)]
@@ -39,9 +39,9 @@ if __name__ == "__main__":
     print("\nМатрица 3 очереди")
     print(*diffs_queue, sep="\n")
 
-    fill_matrix(head_queue)
-    fill_matrix(tail_queue)
-    fill_matrix(diffs_queue)
+    head_queue = get_filled_matrix(head_queue)
+    tail_queue = get_filled_matrix(tail_queue)
+    diffs_queue = get_filled_matrix(diffs_queue)
 
     print("\nМатрица 1 очереди")
     print(*head_queue, sep="\n")

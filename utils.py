@@ -1,16 +1,54 @@
-from copy import copy
+from copy import copy, deepcopy
 
 
-def fill_matrix(mtrx):
-    rows_count = len(mtrx)
-    cols_count = len(mtrx[0])
+def get_filled_matrix(mtrx):
+    res_mtrx = deepcopy(mtrx)
+    rows_count = len(res_mtrx)
+    cols_count = len(res_mtrx[0])
     for row in range(1, rows_count):
-        mtrx[row][0] += mtrx[row - 1][0]
+        res_mtrx[row][0] += res_mtrx[row - 1][0]
     for col in range(1, cols_count):
-        mtrx[0][col] += mtrx[0][col - 1]
+        res_mtrx[0][col] += res_mtrx[0][col - 1]
     for row in range(1, rows_count):
         for col in range(1, cols_count):
-            mtrx[row][col] += max(mtrx[row - 1][col], mtrx[row][col - 1])
+            res_mtrx[row][col] += max(res_mtrx[row - 1][col], res_mtrx[row][col - 1])
+    return res_mtrx
+
+
+def get_plot_ranges_with_value(mtrx):
+    res_mtrx = deepcopy(mtrx)
+    rows_count = len(res_mtrx)
+    cols_count = len(res_mtrx[0])
+    plot_ranges = [[] for _ in range(cols_count)]
+    plot_ranges[0].append((0, mtrx[0][0]))
+    for row in range(1, rows_count):
+        plot_ranges[0].append((res_mtrx[row - 1][0], res_mtrx[row][0]))
+        res_mtrx[row][0] += res_mtrx[row - 1][0]
+    for col in range(1, cols_count):
+        plot_ranges[col].append((res_mtrx[0][col - 1], res_mtrx[0][col]))
+        res_mtrx[0][col] += res_mtrx[0][col - 1]
+    for row in range(1, rows_count):
+        for col in range(1, cols_count):
+            plot_ranges[col].append((max(res_mtrx[row - 1][col], res_mtrx[row][col - 1]),
+                                     res_mtrx[row][col]))
+            res_mtrx[row][col] += max(res_mtrx[row - 1][col], res_mtrx[row][col - 1])
+    return plot_ranges
+
+
+def get_plot_ranges(mtrx):
+    # получается можно использовать заполненую матрицу
+    rows_count = len(mtrx)
+    cols_count = len(mtrx[0])
+    plot_ranges = [[] for _ in range(cols_count)]
+    plot_ranges[0].append((0, mtrx[0][0]))
+    for row in range(1, rows_count):
+        plot_ranges[0].append((mtrx[row - 1][0], mtrx[row][0]))
+    for col in range(1, cols_count):
+        plot_ranges[col].append((mtrx[0][col - 1], mtrx[0][col]))
+    for col in range(1, cols_count):
+        for row in range(1, rows_count):
+            plot_ranges[col].append((max(mtrx[row - 1][col], mtrx[row][col - 1]), mtrx[row][col]))
+    return plot_ranges
 
 
 def transponse(mtrx):
