@@ -28,8 +28,13 @@ if __name__ == "__main__":
     colors = [(random(), random(), random()) for _ in range(rows)]
     labels = [*map(str, range(1, rows+1))]
     patches = [mpatches.Patch(color=colors[i], label=labels[i]) for i in range(rows)]
-    for idx, resource in enumerate(plot_ranges):
-        ax.broken_barh(resource, (cols-idx-0.4, 0.8), facecolors=colors)
+
+    # for idx, resource in enumerate(plot_ranges):
+    #     ax.broken_barh(resource, (cols-idx-0.4, 0.8), facecolors=
+
+    for r_idx, resource in enumerate(plot_ranges):
+        for t_idx, task in enumerate(resource):
+            ax.barh(cols-r_idx, task[1], 0.8, task[0], label=labels[t_idx], color=colors[t_idx], mouseover=True)
 
     ax.set_yticks(range(1, cols + 1), labels=range(cols, 0, -1))
     ax.set_xlim(0, filled_matrix[-1][-1]+1)
