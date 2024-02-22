@@ -65,6 +65,7 @@ if __name__ == "__main__":
     bottle_neck_order.sort(key=lambda x: tr_matrix[0][x[0]])
     bottle_neck_order.sort(key=lambda x: x[1], reverse=True)
     bottle_neck_order = [idx for idx, _ in bottle_neck_order]
+
     max_sum_order = sorted(enumerate([sum(row) for row in tasks_matrix]), key=lambda x: x[1], reverse=True)
     max_sum_order = [idx for idx, _ in max_sum_order]
 
