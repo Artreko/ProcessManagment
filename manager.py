@@ -156,7 +156,7 @@ class Manager:
                        [f'<br><b>Длительность:</b> {df.loc[i, Manager.DATAFRAME_COLUMNS[3]]}' for i in df.index],
                        [f'<br><b>Конец:</b> {df.loc[i, Manager.DATAFRAME_COLUMNS[4]]}' for i in df.index]]
         fig = px.bar(
-            df, base=Manager.DATAFRAME_COLUMNS[1], x=Manager.DATAFRAME_COLUMNS[3],
+            df, base=Manager.DATAFRAME_COLUMNS[2], x=Manager.DATAFRAME_COLUMNS[3],
             y=Manager.DATAFRAME_COLUMNS[0], color=df.task.astype(str), orientation="h",
             custom_data=custom_data, title=title,
             labels={
@@ -170,6 +170,7 @@ class Manager:
             hovertemplate='%{customdata}<extra></extra>')
         fig.select_legends()
         plotly.offline.plot(fig, filename=f'{"_".join(title.split())}_gantt.html', auto_open=False)
+        return fig
 
     @staticmethod
     def get_filled_matrix(mtrx, rows_count, cols_count):
