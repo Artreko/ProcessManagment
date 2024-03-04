@@ -157,7 +157,7 @@ class Manager:
                        [f'<br><b>Конец:</b> {df.loc[i, Manager.DATAFRAME_COLUMNS[4]]}' for i in df.index]]
         fig = px.bar(
             df, base=Manager.DATAFRAME_COLUMNS[2], x=Manager.DATAFRAME_COLUMNS[3],
-            y=Manager.DATAFRAME_COLUMNS[0], color=df.task.astype(str), orientation="h",
+            y=Manager.DATAFRAME_COLUMNS[0], color=df.loc[:, Manager.DATAFRAME_COLUMNS[0]].astype(str), orientation="h",
             custom_data=custom_data, title=title,
             labels={
                 Manager.DATAFRAME_COLUMNS[0]: "Станок",

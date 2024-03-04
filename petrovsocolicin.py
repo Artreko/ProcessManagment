@@ -4,7 +4,7 @@ import plotly
 import plotly.express as px
 
 if __name__ == "__main__":
-    filename = "tasks2.txt"
+    filename = "tasks.txt"
 
     with open(filename, 'r') as inpfile:
         rows = int(inpfile.readline())
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         hovertemplate='%{customdata}<extra></extra>')
     fig.select_legends()
     plotly.offline.plot(fig, filename='gantt.html', auto_open=False)
-
+    # print(fig.to_html())
     # получение времени простоя
     start_end = get_start_end(matr)
     print("Начало - Конец")

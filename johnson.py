@@ -77,7 +77,9 @@ if __name__ == "__main__":
         for j in range(tasks_count):
             for order in orders:
                 if i == order[j]:
+                    print(order[j], j)
                     sum_order[i][1] += j
+    print(*sum_order, sep='\n')
     sum_order.sort(key=lambda x: x[1])
     sum_order = [idx for idx, _ in sum_order]
 
