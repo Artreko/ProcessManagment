@@ -31,6 +31,19 @@ class Manager:
             tasks_matrix = [[*map(int, inpfile.readline().split())] for _ in range(rows)]
             return Manager(tasks_matrix, rows, cols)
 
+    def get_sequences(self) -> dict[str, list[int]]:
+        return {
+            "Исходная последовательность": [*range(self.tasks_count)],
+            "Первое обобщение Джонсона": self.min_first_sequence,
+            "Второе обобщение Джонсона": self.max_last_sequence,
+            "Третье обобщение Джонсона": self.bottle_neck_sequence,
+            "Четвертое обобщение Джонсона": self.max_sum_sequence,
+            "Пятое обобщение Джонсона": self.result_sequence,
+            "По сумме первых": self.head_sums_sequence,
+            "По сумме последних": self.tail_sums_sequence,
+            "По разности": self.diffs_sequence
+        }
+
     # Джонсон
     @property
     def min_first_sequence(self):
@@ -56,7 +69,7 @@ class Manager:
         for row in range(len(self.mtrx)):
             max_col = 0
             max_value = self.mtrx[row][0]
-            for col in range(1, len(self.resources_count)):
+            for col in range(1, self.resources_count):
                 value = self.mtrx[row][col]
                 if value > max_value:
                     max_value = value
@@ -131,15 +144,15 @@ class Manager:
         return [copy(self.mtrx[idx]) for idx in sequence]
 
     @staticmethod
-    def get_plot_dataframe(plot_ranges, tasks_count, resources_count, sequence):
+    def get_plot_dataframe(start_duration, tasks_count, resources_count, sequence):
         plot_data = [[] for _ in range(5)]
         for i in range(resources_count):
             for j in range(tasks_count):
                 plot_data[0].append(i + 1)
                 plot_data[1].append(sequence[j] + 1)
-                plot_data[2].append(plot_ranges[i][j][0])
-                plot_data[3].append(plot_ranges[i][j][1])
-                plot_data[4].append(plot_ranges[i][j][0] + plot_ranges[i][j][1])
+                plot_data[2].append(start_duration[i][j][0])
+                plot_data[3].append(start_duration[i][j][1])
+                plot_data[4].append(start_duration[i][j][0] + start_duration[i][j][1])
 
         df = pd.DataFrame(
             np.c_[
@@ -157,7 +170,7 @@ class Manager:
                        [f'<br><b>Конец:</b> {df.loc[i, Manager.DATAFRAME_COLUMNS[4]]}' for i in df.index]]
         fig = px.bar(
             df, base=Manager.DATAFRAME_COLUMNS[2], x=Manager.DATAFRAME_COLUMNS[3],
-            y=Manager.DATAFRAME_COLUMNS[0], color=df.loc[:, Manager.DATAFRAME_COLUMNS[0]].astype(str), orientation="h",
+            y=Manager.DATAFRAME_COLUMNS[0], color=df.loc[:, Manager.DATAFRAME_COLUMNS[1]].astype(str), orientation="h",
             custom_data=custom_data, title=title,
             labels={
                 Manager.DATAFRAME_COLUMNS[0]: "Станок",
@@ -166,37 +179,39 @@ class Manager:
             }
         ).update_layout(showlegend=True, yaxis_type="category")
         fig.update_yaxes(autorange='reversed')
+        fig.update_xaxes(range=[0, df.loc[df.index[-1], Manager.DATAFRAME_COLUMNS[4]]])
         fig.update_traces(
             hovertemplate='%{customdata}<extra></extra>')
+        fig.update_layout(legend_orientation="h")
         fig.select_legends()
-        plotly.offline.plot(fig, filename=f'{"_".join(title.split())}_gantt.html', auto_open=False)
+        # plotly.offline.plot(fig, filename=f'{"_".join(title.split())}_gantt.html', auto_open=False)
         return fig
 
     @staticmethod
-    def get_filled_matrix(mtrx, rows_count, cols_count):
+    def get_filled_matrix(mtrx, tasks_count, resources_count):
         res_mtrx = deepcopy(mtrx)
-        for row in range(1, rows_count):
+        for row in range(1, tasks_count):
             res_mtrx[row][0] += res_mtrx[row - 1][0]
-        for col in range(1, cols_count):
+        for col in range(1, resources_count):
             res_mtrx[0][col] += res_mtrx[0][col - 1]
-        for row in range(1, rows_count):
-            for col in range(1, cols_count):
+        for row in range(1, tasks_count):
+            for col in range(1, resources_count):
                 res_mtrx[row][col] += max(res_mtrx[row - 1][col], res_mtrx[row][col - 1])
         return res_mtrx
 
     @staticmethod
-    def get_start_duration(mtrx, rows_count, cols_count):
+    def get_start_duration(mtrx, tasks_count, resources_count):
         res_mtrx = deepcopy(mtrx)
-        start_duration = [[] for _ in range(cols_count)]
+        start_duration = [[] for _ in range(resources_count)]
         start_duration[0].append((0, mtrx[0][0]))
-        for row in range(1, rows_count):
+        for row in range(1, tasks_count):
             start_duration[0].append((res_mtrx[row - 1][0], res_mtrx[row][0]))
             res_mtrx[row][0] += res_mtrx[row - 1][0]
-        for col in range(1, cols_count):
+        for col in range(1, resources_count):
             start_duration[col].append((res_mtrx[0][col - 1], res_mtrx[0][col]))
             res_mtrx[0][col] += res_mtrx[0][col - 1]
-        for row in range(1, rows_count):
-            for col in range(1, cols_count):
+        for row in range(1, tasks_count):
+            for col in range(1, resources_count):
                 start_duration[col].append(
                     (
                         max(res_mtrx[row - 1][col], res_mtrx[row][col - 1]),
@@ -207,18 +222,18 @@ class Manager:
         return start_duration
 
     @staticmethod
-    def get_start_end(mtrx, rows_count, cols_count):
+    def get_start_end(mtrx, tasks_count, resources_count) -> list[list[tuple[int, int]]]:
         res_mtrx = deepcopy(mtrx)
-        start_end = [[] for _ in range(cols_count)]
+        start_end = [[] for _ in range(resources_count)]
         start_end[0].append((0, mtrx[0][0]))
-        for row in range(1, rows_count):
+        for row in range(1, tasks_count):
             res_mtrx[row][0] += res_mtrx[row - 1][0]
             start_end[0].append((res_mtrx[row - 1][0], res_mtrx[row][0]))
-        for col in range(1, cols_count):
+        for col in range(1, resources_count):
             res_mtrx[0][col] += res_mtrx[0][col - 1]
             start_end[col].append((res_mtrx[0][col - 1], res_mtrx[0][col]))
-        for row in range(1, rows_count):
-            for col in range(1, cols_count):
+        for row in range(1, tasks_count):
+            for col in range(1, resources_count):
                 res_mtrx[row][col] += max(res_mtrx[row - 1][col], res_mtrx[row][col - 1])
                 start_end[col].append(
                     (
@@ -229,12 +244,12 @@ class Manager:
         return start_end
 
     @staticmethod
-    def get_downtime(start_end):
+    def get_downtime(start_duration):
         downtime = 0
-        for resource in start_end:
+        for resource in start_duration:
             for task in resource:
-                downtime = downtime + task[0] - task[1]
-            downtime += resource[-1][1]
+                downtime = downtime - task[1]
+            downtime += sum(resource[-1])
         return downtime
 
     @staticmethod
