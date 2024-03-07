@@ -1,8 +1,7 @@
 import os
 import sys
 
-from PySide6 import QtCore, QtWidgets, QtWebEngineWidgets, QtGui
-import plotly.express as px
+from PySide6 import QtCore, QtWidgets, QtWebEngineCore, QtGui
 
 from pagewidget import PageWidget
 from ui_mainwindow import Ui_MainWindow
@@ -16,7 +15,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.manager: Manager | None = None
+        self.ui.actionSaveDiagram.setDisabled(True)
+
         self.ui.actionOpen.triggered.connect(self.open_file_txt)
+        self.ui.actionSaveDiagram.triggered.connect(self.save_diagram)
+        self.ui.actionExit.triggered.connect(self.exit)
 
     def open_file_txt(self):
         self.ui.tabWidget.clear()
@@ -28,6 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if filename:
             self.manager = Manager.read_from_txt(filename)
             self.calculate()
+            self.ui.actionSaveDiagram.setEnabled(True)
 
     def calculate(self):
         sequences = self.manager.get_sequences()
@@ -44,6 +48,17 @@ class MainWindow(QtWidgets.QMainWindow):
             total_time = sum(start_duration[-1][-1])
 
             self.ui.tabWidget.addTab(PageWidget(fig, sequence, total_time, downtime), title)
+
+    def save_diagram(self):
+        docs_dir = os.path.join(QtCore.QDir.homePath(), "Documents")
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Сохранить диаграмму", docs_dir, "Html File (*.html)")
+        if filename:
+            page: PageWidget = self.ui.tabWidget.currentWidget()
+            page.browser.page().save(filename,
+                                     QtWebEngineCore.QWebEngineDownloadRequest.SavePageFormat.SingleHtmlSaveFormat)
+
+    def exit(self):
+        self.close()
 
 
 if __name__ == "__main__":
