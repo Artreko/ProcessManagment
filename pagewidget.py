@@ -1,11 +1,12 @@
-from PySide6 import QtCore, QtWidgets, QtWebEngineWidgets, QtGui
+from PySide6 import QtCore, QtWidgets, QtWebEngineWidgets, QtGui, QtWebEngineCore
 from plotly.graph_objects import Figure
+from pandas import DataFrame
 
 
 class PageWidget(QtWidgets.QWidget):
-    def __init__(self, fig: Figure, sequence: list[int], total_time: int, downtime: int):
+    def __init__(self, df: DataFrame, fig: Figure, sequence: list[int], total_time: int, downtime: int):
         super().__init__()
-
+        self.dataframe = df
         self.fig = fig
         self.sequence = sequence
         self.downtime = downtime
@@ -33,3 +34,9 @@ class PageWidget(QtWidgets.QWidget):
         self.time_label.setFont(labels_font)
         v_layout.addWidget(self.time_label, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
 
+    def save_diagram(self, filename):
+        self.browser.page().save(filename,
+                                 QtWebEngineCore.QWebEngineDownloadRequest.SavePageFormat.SingleHtmlSaveFormat)
+
+    def save_dataframe(self, filename):
+        self.dataframe.to_csv(filename)

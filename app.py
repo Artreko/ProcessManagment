@@ -1,7 +1,7 @@
 import os
 import sys
 
-from PySide6 import QtCore, QtWidgets, QtWebEngineCore, QtGui
+from PySide6 import QtCore, QtWidgets, QtGui
 
 from pagewidget import PageWidget
 from ui_mainwindow import Ui_MainWindow
@@ -18,6 +18,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.actionSaveDiagram.setDisabled(True)
 
         self.ui.actionOpen.triggered.connect(self.open_file_txt)
+        self.ui.actionSaveConfig.triggered.connect(self.save_dataframe)
         self.ui.actionSaveDiagram.triggered.connect(self.save_diagram)
         self.ui.actionExit.triggered.connect(self.exit)
 
@@ -47,15 +48,21 @@ class MainWindow(QtWidgets.QMainWindow):
             downtime = Manager.get_downtime(start_duration)
             total_time = sum(start_duration[-1][-1])
 
-            self.ui.tabWidget.addTab(PageWidget(fig, sequence, total_time, downtime), title)
+            self.ui.tabWidget.addTab(PageWidget(df, fig, sequence, total_time, downtime), title)
 
     def save_diagram(self):
         docs_dir = os.path.join(QtCore.QDir.homePath(), "Documents")
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Сохранить диаграмму", docs_dir, "Html File (*.html)")
         if filename:
             page: PageWidget = self.ui.tabWidget.currentWidget()
-            page.browser.page().save(filename,
-                                     QtWebEngineCore.QWebEngineDownloadRequest.SavePageFormat.SingleHtmlSaveFormat)
+            page.save_diagram(filename)
+
+    def save_dataframe(self):
+        docs_dir = os.path.join(QtCore.QDir.homePath(), "Documents")
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Сохранить датасет", docs_dir, "CSV File (*.csv)")
+        if filename:
+            page: PageWidget = self.ui.tabWidget.currentWidget()
+            page.save_dataframe(filename)
 
     def exit(self):
         self.close()
